@@ -18,9 +18,9 @@ class _wpscanFresh(action._action):
             wp_url = helpers.evalString(self.wp_url, {"data": data})
         if extensions == None:
             extensions = constructExtensions(self.enum_all_plugins, self.enum_all_themes, self.enum_users)
-        if self.run_remote and "remote" in persistentData:
-            if "client" in persistentData["remote"]:
-                client = persistentData["remote"]["client"]
+        if self.run_remote and "remote" in data['eventData']:
+            if "client" in data['eventData']["remote"]:
+                client = data['eventData']["remote"]["client"]
                 stdout,stderr = runWPScan(wp_url, extensions, True, client)
         else:
             stdout,stderr = runWPScan(wp_url, extensions)
