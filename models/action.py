@@ -13,9 +13,9 @@ class _wpscanFresh(action._action):
     enum_all_themes = False
     enum_users = True
 
-    def run(self, data, persistentData, actionResult, wp_url=None, extensions=None):
+    def doAction(self, data, wp_url=None, extensions=None):
         if wp_url == None:
-            wp_url = helpers.evalString(self.wp_url, {"data": data})
+            wp_url = helpers.evalString(self.wp_url, {"data": data['flowData']})
         if extensions == None:
             extensions = constructExtensions(self.enum_all_plugins, self.enum_all_themes, self.enum_users)
         if self.run_remote and "remote" in data['eventData']:
@@ -29,6 +29,7 @@ class _wpscanFresh(action._action):
         scanResult = db_obj.new(wp_url)
         db_obj.updateRecord(wp_url, results, extensions)
         results['timestamp'] = int(time())
+        actionResult = {}
         actionResult["result"] = True
         actionResult["rc"] = 200
         actionResult["data"] = results
@@ -45,16 +46,16 @@ class _wpscanCached(action._action):
     enum_all_themes = False
     enum_users = True
 
-    def run(self, data, persistentData, actionResult):
-        wp_url = helpers.evalString(self.wp_url, {"data": data})
-        time_limit_days = int(helpers.evalString(self.if_not_ran_days, {"data": data}))
+    def doAction(self, data):
+        wp_url = helpers.evalString(self.wp_url, {"data": data['flowData']})
+        time_limit_days = int(helpers.evalString(self.if_not_ran_days, {"data": data['flowData']}))
         time_filter = time() - (time_limit_days * 86400)
         extensions = constructExtensions(self.enum_all_plugins, self.enum_all_themes, self.enum_users)
         previous = retrieveResults(wp_url, time_filter, extensions)
         if previous == None:
-            print("scanning new")
             newScan = _wpscanFresh()
-            return newScan.run(data, persistentData, actionResult, wp_url, extensions)
+            return newScan.doAction(data, wp_url, extensions)
+        actionResult = {}
         actionResult["data"] = previous.scanResult
         actionResult["data"]['timestamp'] = previous.lastScan
         actionResult["result"] = True
@@ -94,6 +95,7 @@ def runWPScan(wp_url, extensions, remote=False, remoteClient=None):
             stderr = "\n".join(stderr)
             return stdout,stderr
     else:
+        print(wp_url)
         process = subprocess.Popen(
             ["wpscan", "--url", wp_url, "-e", extensions, "-f", "json", "--rua"], shell=False,
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
