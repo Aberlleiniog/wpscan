@@ -22,10 +22,10 @@ class _wpscanFresh(action._action):
             if "client" in data['eventData']["remote"]:
                 client = data['eventData']["remote"]["client"]
                 stdout,stderr = runWPScan(wp_url, extensions, True, client)
-                if not stdout:
-                    return {"result": False, "rc" : 500, "msg": stderr}
         else:
             stdout,stderr = runWPScan(wp_url, extensions)
+        if not stdout:
+                return {"result": False, "rc": 500, "msg": stderr}
         results = json.loads(stdout)
         db_obj = wpscan._wpscan()
         scanResult = db_obj.new(wp_url)
