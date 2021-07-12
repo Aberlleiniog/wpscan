@@ -91,7 +91,7 @@ def runWPScan(wp_url, extensions, remote=False, remoteClient=None):
     if remote:
         if remoteClient:
             exitCode, stdout, stderr = remoteClient.command(
-                "".join(["wpscan", "--url", wp_url, "-e", extensions, "-f", "json", "--rua"]),
+                " ".join(["wpscan", "--url", wp_url, "-e", extensions, "-f", "json", "--rua"]),
                 elevate=True)
             return stdout,stderr
     else:
